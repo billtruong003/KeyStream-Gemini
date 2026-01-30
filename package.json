@@ -1,5 +1,5 @@
 {
-  "name": "api_reroll",
+  "name": "keystream-gemini",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -17,6 +17,8 @@
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "fetch": "^1.1.0",
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.1",
     "node": "^25.5.0",
     "socket.io": "^4.8.3"
   }

@@ -10,8 +10,12 @@ const loadKeys = () => {
     }
     const raw = fs.readFileSync(config.KEY_FILE, "utf8");
     const keys = JSON.parse(raw);
+
+    // Create a map for O(1) lookup of existing keys
+    const existingKeysMap = new Map(keyPool.map((k) => [k.key, k]));
+
     keyPool = keys.map((k) => {
-      const existing = keyPool.find((old) => old.key === k);
+      const existing = existingKeysMap.get(k);
       return (
         existing || {
           key: k,
@@ -28,9 +32,9 @@ const loadKeys = () => {
   }
 };
 
-const saveKeys = () => {
+const saveKeys = async () => {
   try {
-    fs.writeFileSync(
+    await fs.promises.writeFile(
       config.KEY_FILE,
       JSON.stringify(
         keyPool.map((k) => k.key),
@@ -45,29 +49,36 @@ const saveKeys = () => {
 
 const getOptimalKey = (excludeKeys = []) => {
   const now = Date.now();
+  let bestKey = null;
+  let minLastUsed = Infinity;
 
-  const availableKeys = keyPool.filter(
-    (k) => !excludeKeys.includes(k.key) && k.status === "active",
-  );
-
-  if (availableKeys.length > 0) {
-    return availableKeys.sort((a, b) => a.lastUsed - b.lastUsed)[0];
+  // O(N) search for the best active key
+  for (const k of keyPool) {
+    if (k.status === "active" && !excludeKeys.includes(k.key)) {
+      if (k.lastUsed < minLastUsed) {
+        minLastUsed = k.lastUsed;
+        bestKey = k;
+      }
+    }
   }
 
-  const cooldownKeys = keyPool.filter(
-    (k) => !excludeKeys.includes(k.key) && k.status === "cooldown",
+  if (bestKey) return bestKey;
+
+  // Check for recovered cooldown keys
+  const recoveredKey = keyPool.find(
+    (k) =>
+      k.status === "cooldown" &&
+      !excludeKeys.includes(k.key) &&
+      now - k.lastUsed > config.KEY_COOLDOWN_TIME,
   );
 
-  const recoveredKey = cooldownKeys.find(
-    (k) => now - k.lastUsed > config.KEY_COOLDOWN_TIME,
-  );
   if (recoveredKey) {
     recoveredKey.status = "active";
     return recoveredKey;
   }
 
   return null;
-};
+};;
 
 const addKey = (key) => {
   if (key && !keyPool.find((k) => k.key === key)) {

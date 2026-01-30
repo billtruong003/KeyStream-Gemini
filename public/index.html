@@ -4,7 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini Command Center</title>
+    <title>KeyStream-Gemini Dashboard</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -12,68 +18,146 @@
 </head>
 
 <body>
-    <div class="container-fluid p-4">
+    <div class="container-fluid p-4 mw-100" style="max-width: 1600px;">
         <!-- HEADER -->
-        <header class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
+        <header class="d-flex justify-content-between align-items-center mb-5">
             <div>
-                <h1 class="glitch" style="margin-bottom: 0;">GEMINI_PROXY_HUB</h1>
-                <small class="text-muted">High Performance Reverse Proxy</small>
+                <h2 class="mb-1 d-flex align-items-center gap-2">
+                    <span class="text-accent">✨</span> KeyStream-Gemini
+                </h2>
+                <p class="text-muted mb-0 small" data-i18n="subtitle">High-Performance API Orchestration Layer</p>
             </div>
             <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-cyber" onclick="showConfigModal()">
-                    <span class="me-2">⚙️</span>GET CONFIG
+                <!-- Language Toggle -->
+                <div class="btn-group" role="group" aria-label="Language toggle">
+                    <button type="button" class="btn btn-icon" onclick="setLanguage('en')" title="English">🇺🇸</button>
+                    <button type="button" class="btn btn-icon" onclick="setLanguage('vi')" title="Tiếng Việt">🇻🇳</button>
+                </div>
+                
+                <!-- Theme Toggles -->
+                <div class="btn-group" role="group" aria-label="Theme toggle">
+                    <button type="button" class="btn btn-icon" onclick="setTheme('light')" title="Light Mode">☀️</button>
+                    <button type="button" class="btn btn-icon" onclick="setTheme('dark')" title="Dark Mode">🌙</button>
+                    <button type="button" class="btn btn-icon" onclick="setTheme('system')" title="System Preference">💻</button>
+                </div>
+                
+                <button class="btn btn-primary-custom d-flex align-items-center gap-2" onclick="showConfigModal()">
+                    <span>⚙️</span> <span data-i18n="configBtn">Config</span>
                 </button>
-                <div class="status-box">
-                    SYSTEM: <span class="text-success fw-bold">ONLINE</span>
+                <div class="d-flex align-items-center gap-2 px-3 py-2 bg-soft rounded-3 border"
+                    style="border-color: var(--border-color) !important;">
+                    <span class="status-indicator status-online"></span>
+                    <span class="fw-bold small" data-i18n="statusOnline">ONLINE</span>
                 </div>
             </div>
         </header>
 
-        <div class="row g-4">
-            <!-- TRAFFIC CHART -->
-            <div class="col-md-8">
+        <!-- ANALYTICS SUMMARY CARDS -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
                 <div class="card h-100">
-                    <div class="card-header d-flex justify-content-between">
-                        <span>LIVE_TRAFFIC_MONITOR</span>
-                        <small class="text-info" id="tpsIndicator">0 REQ/MIN</small>
+                    <div class="card-body">
+                        <div class="summary-label" data-i18n="totalRequests">Total Requests</div>
+                        <h3 class="summary-value text-accent" id="totalRequests">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="summary-label" data-i18n="successRate">Success Rate</div>
+                        <h3 class="summary-value" style="color: var(--success-color)" id="successRate">0%</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="summary-label" data-i18n="errors">Errors</div>
+                        <h3 class="summary-value" style="color: var(--danger-color)" id="totalErrors">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="summary-label" data-i18n="avgDaily">Avg Daily (7d)</div>
+                        <h3 class="summary-value" style="color: var(--warning-color)" id="avgDailyRequests">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- LIVE TRAFFIC CHART -->
+            <div class="col-lg-8">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <span data-i18n="liveTraffic">Live Traffic</span>
+                        <span class="badge bg-soft text-accent rounded-pill fw-normal"
+                            style="color: var(--accent-color); background-color: var(--bg-input);" id="tpsIndicator">0 req/min</span>
                     </div>
                     <div class="card-body">
-                        <canvas id="trafficChart" style="max-height: 250px;"></canvas>
+                        <canvas id="trafficChart" style="max-height: 280px;"></canvas>
                     </div>
                 </div>
             </div>
 
             <!-- ADD KEY -->
-            <div class="col-md-4">
+            <div class="col-lg-4">
                 <div class="card h-100">
-                    <div class="card-header">INJECT_NEW_KEY</div>
+                    <div class="card-header" data-i18n="manageKeys">Manage Keys</div>
                     <div class="card-body d-flex flex-column justify-content-center">
-                        <label class="text-muted mb-2">Google AI Studio Key</label>
-                        <div class="input-group mb-3">
+                        <label class="text-secondary mb-2 small fw-bold" data-i18n="addKeyLabel">ADD GOOGLE AI STUDIO KEY</label>
+                        <div class="d-flex gap-2 mb-3">
                             <input type="text" id="newKeyInput" class="form-control" placeholder="AIzaSy...">
-                            <button onclick="addKey()" class="btn btn-outline-info">ADD</button>
-                        </div>
-                        <small class="text-muted" style="font-size: 0.7rem;">Keys are saved automatically to
-                            keys.json</small>
+                            <button onclick="addKey()" class="btn btn-primary-custom px-4" data-i18n="addBtn">Add</button>
+                            </div>
+                            <p class="text-muted small mb-0" data-i18n="keyNote">
+                                Keys are automatically rotated. Valid keys are stored securely in <code>keys.json</code>.
+                            </p>
+                            </div>
+                            </div>
+                            </div>
+                            
+                            <!-- HISTORICAL REQUESTS CHART -->
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header" data-i18n="reqHistory">Request History (7 Days)</div>
+                                    <div class="card-body">
+                                        <canvas id="historicalRequestsChart" style="max-height: 300px;"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+            <!-- MODEL USAGE DISTRIBUTION CHART -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header" data-i18n="modelDist">Model Distribution</div>
+                    <div class="card-body">
+                        <canvas id="modelUsageChart" style="max-height: 300px;"></canvas>
                     </div>
                 </div>
             </div>
 
             <!-- KEY STATUS TABLE -->
-            <div class="col-md-7">
+            <div class="col-lg-7">
                 <div class="card h-100">
-                    <div class="card-header">KEY_POOL_MATRIX</div>
-                    <div class="card-body p-0 table-responsive custom-scrollbar">
-                        <table class="table table-dark table-hover mb-0 align-middle">
+                    <div class="card-header">
+                        <span data-i18n="keyPoolStatus">Key Pool Status</span>
+                    </div>
+                    <div class="card-body p-0 table-responsive">
+                        <table class="table table-hover align-middle">
                             <thead>
-                                <tr class="text-secondary text-uppercase fs-7">
-                                    <th>Key Hash</th>
-                                    <th>Status</th>
-                                    <th>Usage</th>
-                                    <th>Errors</th>
+                                <tr>
+                                    <th class="ps-4" data-i18n="thKeyHash">Key Hash</th>
+                                    <th data-i18n="thStatus">Status</th>
+                                    <th data-i18n="thUsage">Usage (Session)</th>
+                                    <th data-i18n="thErrors">Errors (Session)</th>
+                                    <th data-i18n="thTotalReq">Total Req</th>
+                                    <th class="pe-4" data-i18n="thTotalErr">Total Err</th>
                                 </tr>
                             </thead>
-                            <tbody id="keyTableBody">
+                            <tbody id="keyTableBody" class="border-top-0">
                                 <!-- Data injected by JS -->
                             </tbody>
                         </table>
@@ -82,15 +166,15 @@
             </div>
 
             <!-- LOG TERMINAL -->
-            <div class="col-md-5">
+            <div class="col-lg-5">
                 <div class="card h-100">
-                    <div class="card-header d-flex justify-content-between">
-                        <span>TERMINAL_OUTPUT</span>
-                        <button class="btn btn-sm btn-dark py-0"
-                            onclick="document.getElementById('logContainer').innerHTML=''">CLEAR</button>
+                    <div class="card-header">
+                        <span data-i18n="systemLogs">System Logs</span>
+                        <button class="btn btn-sm btn-icon" style="width:30px; height:30px; font-size: 0.8rem;"
+                            onclick="document.getElementById('logContainer').innerHTML=''">🗑️</button>
                     </div>
-                    <div class="card-body log-container font-monospace" id="logContainer">
-                        <div class="log-entry text-muted">System initialized... Waiting for requests.</div>
+                    <div class="card-body log-container" id="logContainer">
+                        <div class="log-entry text-muted">[SYSTEM] Dashboard initialized...</div>
                     </div>
                 </div>
             </div>
@@ -100,24 +184,27 @@
     <!-- CONFIG MODAL -->
     <div class="modal fade" id="configModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content card">
-                <div class="modal-header border-bottom-0">
-                    <h5 class="modal-title text-info">CONTINUE EXTENSION CONFIGURATION</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" data-i18n="configTitle">Configuration Export</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-muted">Paste this <b>YAML</b> list under <code>models:</code> in your
-                            <code>config.yaml</code>:</span>
-                        <button id="btnRefresh" class="btn btn-sm btn-outline-warning" onclick="refreshModels()">
-                            🔄 SCAN GOOGLE MODELS
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <p class="text-muted mb-0 small" data-i18n="configInstruct">Add this to your <code>config.yaml</code> under
+                            <code>models:</code>
+                        </p>
+                        <button id="btnRefresh" class="btn btn-sm btn-outline-secondary" onclick="refreshModels()">
+                            <span data-i18n="scanModels">🔄 Scan Models</span>
                         </button>
                     </div>
-                    <textarea id="configOutput" class="form-control bg-black text-success font-monospace" rows="12" readonly></textarea>
-                    <div class="mt-2 text-end text-muted" style="font-size: 0.8rem;" id="modelCount"></div>
+                    <textarea id="configOutput" class="form-control font-monospace mb-2"
+                        style="background-color: var(--bg-input); font-size: 0.85rem;" rows="12" readonly></textarea>
+                    <div class="text-end text-muted small" id="modelCount"></div>
                 </div>
-                <div class="modal-footer border-top-0">
-                    <button type="button" class="btn btn-cyber w-100" onclick="copyConfig()">COPY TO CLIPBOARD</button>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-primary-custom w-100" onclick="copyConfig()" data-i18n="copyBtn">Copy to
+                        Clipboard</button>
                 </div>
             </div>
         </div>

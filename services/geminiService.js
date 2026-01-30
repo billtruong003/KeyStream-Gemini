@@ -5,16 +5,19 @@ const config = require("../config");
 let dynamicModels = [];
 
 const mapMessagesToGemini = (messages) => {
-  let systemInstruction = undefined;
+  let systemParts = [];
   const contents = [];
+
   for (const msg of messages) {
     if (msg.role === "system") {
-      systemInstruction = { parts: [{ text: msg.content }] };
+      systemParts.push({ text: msg.content });
     } else {
       const role = msg.role === "assistant" ? "model" : "user";
       contents.push({ role, parts: [{ text: msg.content }] });
     }
   }
+
+  const systemInstruction = systemParts.length > 0 ? { parts: systemParts } : undefined;
   return { contents, systemInstruction };
 };
 
@@ -63,19 +66,31 @@ const initializeModelFetching = () => {
   setInterval(fetchGoogleModels, config.MODEL_FETCH_INTERVAL);
 };
 
-const generateContent = async (apiKey, modelName, messages, stream = false) => {
+const generateContent = async (apiKey, modelName, messages, generationConfig = {}, stream = false) => {
   const genAI = new GoogleGenerativeAI(apiKey);
   const { contents, systemInstruction } = mapMessagesToGemini(messages);
 
   const model = genAI.getGenerativeModel({
     model: modelName,
     systemInstruction,
+    safetySettings: [
+      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+    ],
   });
 
   if (stream) {
-    return model.generateContentStream({ contents });
+    return await model.generateContentStream({ 
+        contents,
+        generationConfig
+    });
   } else {
-    return model.generateContent({ contents });
+    return await model.generateContent({ 
+        contents,
+        generationConfig
+    });
   }
 };
 
@@ -84,5 +99,5 @@ module.exports = {
   getDynamicModels,
   initializeModelFetching,
   generateContent,
-  mapMessagesToGemini, // Exporting for testing or if needed elsewhere
+  mapMessagesToGemini,
 };
