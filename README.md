@@ -1,6 +1,7 @@
 # KeyStream-Gemini
 
 KeyStream-Gemini is a high-performance reverse proxy designed to optimize Google Gemini API usage through intelligent key rotation and real-time monitoring. It ensures high availability and bypasses rate limits by dynamically managing a pool of API keys.
+<img width="2534" height="1299" alt="58b66edb-f990-45f2-b895-52d8953cac59" src="https://github.com/user-attachments/assets/b4262ecd-47b1-4357-9183-8eac19659c55" />
 
 ## Core Features
 
@@ -9,6 +10,14 @@ KeyStream-Gemini is a high-performance reverse proxy designed to optimize Google
 - **Model Synchronization**: Automated discovery and update of available Gemini models via Google API.
 - **Native Streaming Support**: Optimized handling of Server-Sent Events (SSE) for fluid AI interactions.
 - **OpenAI Compatibility**: Standardized interface for seamless integration with tools like Continue.dev.
+
+## 📺 Video Tutorial & Demo
+<div align="center">
+  <a href="https://www.youtube.com/watch?v=C7CeLLUwUDg">
+    <img src="https://i.postimg.cc/RhdzH2sF/image-(1).png" alt="Watch Setup Guide" width="100%" style="max-width: 600px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+  </a>
+  <p><i>See how to bypass rate limits and integrate with Unity in 5 minutes.</i></p>
+</div>
 
 ## Installation
 
@@ -41,6 +50,7 @@ KeyStream-Gemini is a high-performance reverse proxy designed to optimize Google
    npm start
    ```
    The gateway will be accessible at `http://localhost:13337`.
+
 
 ## Integration
 
